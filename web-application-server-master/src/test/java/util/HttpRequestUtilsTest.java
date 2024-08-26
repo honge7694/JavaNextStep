@@ -3,6 +3,7 @@ package util;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
+import java.io.*;
 import java.util.Map;
 
 import org.junit.Test;
@@ -10,6 +11,21 @@ import org.junit.Test;
 import util.HttpRequestUtils.Pair;
 
 public class HttpRequestUtilsTest {
+    private String testDir = "./src/test/resources/";
+
+    @Test
+    public void getUrl() throws IOException {
+        InputStream in = new FileInputStream(testDir + "Http_Get.txt");
+        BufferedReader br = new BufferedReader(new InputStreamReader(in));
+        String line = br.readLine();
+        String path = HttpRequestUtils.getUrl(line);
+
+        String url = "/index.html";
+        assertThat(path, is(url));
+        br.close();
+        in.close();
+    }
+
     @Test
     public void parseQueryString() {
         String queryString = "userId=javajigi";

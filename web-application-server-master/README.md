@@ -15,7 +15,18 @@
 * 각 요구사항을 구현하는 것이 중요한 것이 아니라 구현 과정을 통해 학습한 내용을 인식하는 것이 배움에 중요하다. 
 
 ### 요구사항 1 - http://localhost:8080/index.html로 접속시 응답
+* 애플리케이션은 Socket 통신을 한다.
 * 
+
+* InputStream : 1byte 읽기
+  * abc => 97로 아스키코드값 출력, 1byte만 읽기 때문에 a(97)만 출력
+  * 아스키코드 출력 됨
+  * 1byte 초과시 배열 크기를 정해줘야 하는 문제
+* InputStreamReader : char type 읽기
+  * abc => abc 출력
+  * 배열 크기를 정해줘야 하는 문제
+* BufferedReader : \n이 나오기 전까지 모두 읽기
+  * Hello World => Hello World
 
 ### 요구사항 2 - get 방식으로 회원가입
 * 
