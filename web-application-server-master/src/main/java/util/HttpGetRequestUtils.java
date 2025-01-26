@@ -2,9 +2,8 @@ package util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import webserver.RequestHandler;
+import vo.HttpRequestVo;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 public class HttpGetRequestUtils {
@@ -15,16 +14,20 @@ public class HttpGetRequestUtils {
      * @param line: header 첫 라인
      * @return tokenList: method, url, params, HTTP/1.1
      */
-    public static ArrayList<String> getRequestUrl(String line) {
+    public static HttpRequestVo getRequestUrl(String line) {
         String[] tokens = line.split(" ");
-        ArrayList<String> tokenList = new ArrayList<>(Arrays.asList(tokens));
-        if (tokenList.get(1).contains("?")) {
-            tokenList.add(3, tokenList.get(2));
-            tokenList.set(2, tokens[1].substring(tokens[1].indexOf("?")+1, tokens[1].length()));
-            tokenList.set(1, tokens[1].substring(0, tokens[1].indexOf("?")));
+        String method = tokens[0];
+        String url = tokens[1];
+        String params = "";
+        String httpVersion = tokens[2];
+
+        if (tokens[1].contains("?")) {
+            url = tokens[1].substring(0, tokens[1].indexOf("?"));
+            params = tokens[1].substring(tokens[1].indexOf("?")+1, tokens[1].length());
         }
-        log.info("tokenList : {}", tokenList);
-        return tokenList;
+        HttpRequestVo httpRequestVo = new HttpRequestVo(method, url, params, httpVersion);
+        log.info("httpRequestVo : {}", httpRequestVo);
+        return httpRequestVo;
     }
 
 }

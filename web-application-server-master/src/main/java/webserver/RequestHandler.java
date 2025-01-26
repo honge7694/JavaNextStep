@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.HttpGetRequestUtils;
 import util.HttpRequestUtils;
+import vo.HttpRequestVo;
 
 public class RequestHandler extends Thread {
     private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
@@ -30,20 +31,20 @@ public class RequestHandler extends Thread {
             // TODO 사용자 요청에 대한 처리는 이 곳에 구현하면 된다.
             BufferedReader line = new BufferedReader(new InputStreamReader(in));
             String firstLine = line.readLine();
-            ArrayList<String> header = new ArrayList<>();
+            HttpRequestVo header = null;
             String apiMethod = "";
             String apiUrl = "";
-
+            Map<String, String> apiParams = new HashMap<>();
             if (firstLine != null && !firstLine.isEmpty()) {
                 header = HttpGetRequestUtils.getRequestUrl(firstLine);
-                apiMethod = header.get(0);
-                apiUrl = header.get(1);
+                apiMethod = header.getMethod();
+                apiUrl = header.getUrl();
             }
 
             // GET 요청
             if (apiMethod.equals("GET")) {
-                if (apiUrl.equals("/user/create") && !header.get(2).isEmpty()) {
-                    Map<String, String> apiParams = new HashMap<>(HttpRequestUtils.parseQueryString(header.get(2)));
+                if (apiUrl.equals("/user/create") && !header.getParams().isEmpty()) {
+                    apiParams = new HashMap<>(HttpRequestUtils.parseQueryString(header.getParams()));
                     User user = new User(apiParams.get("userId"), apiParams.get("password"), apiParams.get("name"), apiParams.get("email"));
                     log.info("user : {}", user);
                     apiUrl = "/index.html";

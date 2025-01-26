@@ -9,13 +9,16 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
+import model.User;
 import org.junit.Test;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.HttpRequestUtils.Pair;
+import vo.HttpRequestVo;
 
 public class HttpRequestUtilsTest {
 
@@ -90,10 +93,10 @@ public class HttpRequestUtilsTest {
         //System.out.printf("line : " + line + " readLine : " + line.readLine());
 
         String firstLine = line.readLine();
-        ArrayList<String> url = null;
+        HttpRequestVo header = null;
         if (!firstLine.isEmpty() && firstLine != null) {
-            url = HttpGetRequestUtils.getRequestUrl(firstLine);
-            System.out.println("url = " + url.get(2));
+            header = HttpGetRequestUtils.getRequestUrl(firstLine);
+            System.out.println("header = " + header);
         }
 
         String currentLine;
@@ -102,8 +105,8 @@ public class HttpRequestUtilsTest {
             System.out.println(currentLine);
         }
 
-        assertEquals("/index.html", url.get(1));
-        assertThat(url.get(1), is("/index.html"));
+        assertEquals("/index.html", header.getUrl());
+        assertThat(header.getUrl(), is("/index.html"));
         line.close();
         in.close();
     }
@@ -114,10 +117,35 @@ public class HttpRequestUtilsTest {
         BufferedReader line = new BufferedReader(new InputStreamReader(in));
 
         String firstLine = line.readLine();
-        ArrayList<String> url;
+        HttpRequestVo header = null;
+        Map<String, String> apiParams = new HashMap<>();;
         if (!firstLine.isEmpty() && firstLine != null) {
-            url = HttpGetRequestUtils.getRequestUrl(firstLine);
-            System.out.println("url = " + url.get(2));
+            header = HttpGetRequestUtils.getRequestUrl(firstLine);
         }
+
+        if (header != null && !header.getParams().isEmpty()) {
+            apiParams = new HashMap<>(HttpRequestUtils.parseQueryString(header.getParams()));
+            User user = new User(apiParams.get("userId"), apiParams.get("password"), apiParams.get("name"), apiParams.get("email"));
+            log.info("user : {}", user);
+        }
+
+        assertThat(apiParams.getOrDefault("userId", ""), is("java"));
+        assertThat(apiParams.getOrDefault("password", ""), is("test"));
+        assertThat(apiParams.getOrDefault("name", ""), is("test"));
+        assertThat(apiParams.getOrDefault("email", ""), is("test%40naver.com"));
+
     }
+
+//    @Test
+//    public void requestQuestion3() throws Exception {
+//        InputStream in = new FileInputStream(fileDir + "Http_Post_Join.txt");
+//        BufferedReader line = new BufferedReader(new InputStreamReader(in));
+//
+//        String firstLine = line.readLine();
+//        ArrayList<String> header;
+//        if (!firstLine.isEmpty() && firstLine != null) {
+//            header = HttpGetRequestUtils.getRequestUrl(firstLine);
+//            System.out.println("header = " + header.get(1));
+//        }
+//    }
 }
