@@ -1,4 +1,1 @@
-GET /index.html HTTP/1.1
-HOST: localhost:8080
-Connection: keep-alive
-Accept: */*
+GET /user/create?userId=java&password=test&name=test&email=test%40naver.com HTTP/1.1

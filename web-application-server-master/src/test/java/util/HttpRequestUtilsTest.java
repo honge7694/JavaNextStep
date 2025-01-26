@@ -7,6 +7,8 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 
 import org.junit.Test;
@@ -83,14 +85,15 @@ public class HttpRequestUtilsTest {
 
     @Test
     public void requestQuestion1() throws Exception {
-        InputStream in = new FileInputStream(fileDir + "Http_Get_Join.txt");
+        InputStream in = new FileInputStream(fileDir + "Http_Get.txt");
         BufferedReader line = new BufferedReader(new InputStreamReader(in));
         //System.out.printf("line : " + line + " readLine : " + line.readLine());
 
         String firstLine = line.readLine();
-        String[] url = new String[0];
+        ArrayList<String> url = null;
         if (!firstLine.isEmpty() && firstLine != null) {
             url = HttpGetRequestUtils.getRequestUrl(firstLine);
+            System.out.println("url = " + url.get(2));
         }
 
         String currentLine;
@@ -99,9 +102,22 @@ public class HttpRequestUtilsTest {
             System.out.println(currentLine);
         }
 
-        assertEquals("/index.html", url[1]);
-        assertThat(url[1], is("/index.html"));
+        assertEquals("/index.html", url.get(1));
+        assertThat(url.get(1), is("/index.html"));
         line.close();
         in.close();
+    }
+
+    @Test
+    public void requestQuestion2() throws Exception {
+        InputStream in = new FileInputStream(fileDir + "Http_Get_Join.txt");
+        BufferedReader line = new BufferedReader(new InputStreamReader(in));
+
+        String firstLine = line.readLine();
+        ArrayList<String> url;
+        if (!firstLine.isEmpty() && firstLine != null) {
+            url = HttpGetRequestUtils.getRequestUrl(firstLine);
+            System.out.println("url = " + url.get(2));
+        }
     }
 }
