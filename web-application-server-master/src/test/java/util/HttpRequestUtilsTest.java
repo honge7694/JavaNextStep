@@ -3,13 +3,23 @@ package util;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Map;
 
 import org.junit.Test;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import util.HttpRequestUtils.Pair;
 
 public class HttpRequestUtilsTest {
+
+    private static final Logger log = LoggerFactory.getLogger(HttpRequestUtilsTest.class);
+    String fileDir = "./src/test/resources/";
+
     @Test
     public void parseQueryString() {
         String queryString = "userId=javajigi";
@@ -69,5 +79,29 @@ public class HttpRequestUtilsTest {
         String header = "Content-Length: 59";
         Pair pair = HttpRequestUtils.parseHeader(header);
         assertThat(pair, is(new Pair("Content-Length", "59")));
+    }
+
+    @Test
+    public void requestQuestion1() throws Exception {
+        InputStream in = new FileInputStream(fileDir + "Http_Get_Join.txt");
+        BufferedReader line = new BufferedReader(new InputStreamReader(in));
+        //System.out.printf("line : " + line + " readLine : " + line.readLine());
+
+        String firstLine = line.readLine();
+        String[] url = new String[0];
+        if (!firstLine.isEmpty() && firstLine != null) {
+            url = HttpGetRequestUtils.getRequestUrl(firstLine);
+        }
+
+        String currentLine;
+        while((currentLine = line.readLine()) != null) {
+            if (currentLine.isEmpty()) continue;
+            System.out.println(currentLine);
+        }
+
+        assertEquals("/index.html", url[1]);
+        assertThat(url[1], is("/index.html"));
+        line.close();
+        in.close();
     }
 }
