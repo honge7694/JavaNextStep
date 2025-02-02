@@ -3,12 +3,7 @@ package util;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -95,7 +90,7 @@ public class HttpRequestUtilsTest {
         String firstLine = line.readLine();
         HttpRequestVo header = null;
         if (!firstLine.isEmpty() && firstLine != null) {
-            header = HttpGetRequestUtils.getRequestUrl(firstLine);
+            header = HttpRequestHeaderUtils.getRequestUrl(firstLine);
             System.out.println("header = " + header);
         }
 
@@ -120,7 +115,7 @@ public class HttpRequestUtilsTest {
         HttpRequestVo header = null;
         Map<String, String> apiParams = new HashMap<>();;
         if (!firstLine.isEmpty() && firstLine != null) {
-            header = HttpGetRequestUtils.getRequestUrl(firstLine);
+            header = HttpRequestHeaderUtils.getRequestUrl(firstLine);
         }
 
         if (header != null && !header.getParams().isEmpty()) {
@@ -133,19 +128,52 @@ public class HttpRequestUtilsTest {
         assertThat(apiParams.getOrDefault("password", ""), is("test"));
         assertThat(apiParams.getOrDefault("name", ""), is("test"));
         assertThat(apiParams.getOrDefault("email", ""), is("test%40naver.com"));
-
     }
 
-//    @Test
-//    public void requestQuestion3() throws Exception {
-//        InputStream in = new FileInputStream(fileDir + "Http_Post_Join.txt");
-//        BufferedReader line = new BufferedReader(new InputStreamReader(in));
-//
-//        String firstLine = line.readLine();
-//        ArrayList<String> header;
-//        if (!firstLine.isEmpty() && firstLine != null) {
-//            header = HttpGetRequestUtils.getRequestUrl(firstLine);
-//            System.out.println("header = " + header.get(1));
-//        }
-//    }
+    @Test
+    public void requestQuestion3() throws Exception {
+        InputStream in = new FileInputStream(fileDir + "Http_Post_Join.txt");
+        BufferedReader line = new BufferedReader(new InputStreamReader(in));
+
+        String firstLine = line.readLine();
+        HttpRequestVo header;
+        if (!firstLine.isEmpty() && firstLine != null) {
+            header = HttpRequestHeaderUtils.getRequestUrl(firstLine);
+            log.info("header : {}", header);
+        }
+
+        /*
+        String currentLine;
+        int contentLength = 0;
+        boolean isBody = false;
+        String requestBody = "";
+        while((currentLine = line.readLine()) != null) {
+            if (currentLine.isEmpty()){
+                isBody = true;
+                continue;
+            }
+            log.info("currentLine : {}", currentLine);
+
+            if (currentLine.startsWith("Content-Length:")) {
+                contentLength = Integer.parseInt((currentLine.split(": ")[1]));
+            }
+
+            if (isBody) {
+                requestBody = currentLine;
+            }
+        }
+        BufferedReader br = new BufferedReader(new StringReader(requestBody));
+        log.info("readData : {}", HttpRequestUtils.parseQueryString(IOUtils.readData(br, contentLength).trim()));
+        */
+        log.debug("getRequestBody : {}", HttpRequestHeaderUtils.getRequestBody2(line));
+    }
+
+    @Test
+    public void test1() {
+        String test = "abc";
+        String test2 = test;
+        test = "aaa";
+        log.debug("test : {}, test2: {}", test, test2);
+
+    }
 }

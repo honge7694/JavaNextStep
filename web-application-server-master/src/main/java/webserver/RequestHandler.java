@@ -1,18 +1,17 @@
 package webserver;
 
-import java.io.*;
-import java.net.Socket;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import util.HttpGetRequestUtils;
+import util.HttpRequestHeaderUtils;
 import util.HttpRequestUtils;
 import vo.HttpRequestVo;
+
+import java.io.*;
+import java.net.Socket;
+import java.nio.file.Files;
+import java.util.HashMap;
+import java.util.Map;
 
 public class RequestHandler extends Thread {
     private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
@@ -36,7 +35,7 @@ public class RequestHandler extends Thread {
             String apiUrl = "";
             Map<String, String> apiParams = new HashMap<>();
             if (firstLine != null && !firstLine.isEmpty()) {
-                header = HttpGetRequestUtils.getRequestUrl(firstLine);
+                header = HttpRequestHeaderUtils.getRequestUrl(firstLine);
                 apiMethod = header.getMethod();
                 apiUrl = header.getUrl();
             }
@@ -51,9 +50,13 @@ public class RequestHandler extends Thread {
                 }
             }
 
-            // TODO: POST 요청
+            // POST 요청
+            log.debug("apiMethod : {}", apiMethod);
             if (apiMethod.equals("POST")) {
-
+                apiParams = HttpRequestHeaderUtils.getRequestBody2(line);
+                User user = new User(apiParams.get("userId"), apiParams.get("password"), apiParams.get("name"), apiParams.get("email"));
+                log.debug("user : {}", user);
+                apiUrl = "/index.html";
             }
 
             byte[] body = Files.readAllBytes(new File("./webapp" + apiUrl).toPath());

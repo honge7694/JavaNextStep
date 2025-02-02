@@ -17,4 +17,22 @@ public class IOUtils {
         br.read(body, 0, contentLength);
         return String.copyValueOf(body);
     }
+
+    /**
+     *
+     * @param BufferedReader는 Request Header 전체
+     * @param contentLength는 Request Header의 Content-Length 값
+     * @return
+     * @throws IOException
+     */
+    public static char[] readBodyData(BufferedReader br, int contentLength) throws IOException {
+        char[] body = new char[contentLength];
+        int readBytes = br.read(body, 0, contentLength);
+
+        if (readBytes > 0) {
+            return body;
+        }
+        return new char[0];
+    }
+
 }
