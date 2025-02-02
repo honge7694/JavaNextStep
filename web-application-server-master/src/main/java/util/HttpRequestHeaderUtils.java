@@ -7,6 +7,7 @@ import vo.HttpRequestVo;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.HashMap;
 import java.util.Map;
 
 public class HttpRequestHeaderUtils {
@@ -33,29 +34,30 @@ public class HttpRequestHeaderUtils {
         return httpRequestVo;
     }
 
-    public static Map<String, String> getRequestBody(BufferedReader line) throws IOException {
-        String currentLine;
-        int contentLength = 0;
-        boolean isBody = false;
-        String requestBody = "";
-        while ((currentLine = line.readLine()) != null) {
-            if (currentLine.isEmpty()) {
-                isBody = true;
-                continue;
-            }
-            if (currentLine.startsWith("Content-Length:")) {
-                contentLength = Integer.parseInt((currentLine.split(": ")[1]));
-            } else if (isBody) {
-                requestBody = currentLine;
-                break;
-            }
-            log.debug("currentLine : {}", currentLine);
+    /**
+     * HTTP 요청의 메서드에 따라 파라미터 파싱 후 반환
+     * @param method
+     * @param header: header 첫 라인
+     * @param line: requestHeader의 모든 라인
+     * @return
+     * @throws IOException
+     */
+    public static Map<String, String> getParamsByMethod(String method, HttpRequestVo header, BufferedReader line) throws IOException {
+        if ("GET".equalsIgnoreCase(method)) {
+            return HttpRequestUtils.parseQueryString(header.getParams());
+        } else if ("POST".equalsIgnoreCase(method)) {
+            return getRequestBody(line);
         }
-        BufferedReader br = new BufferedReader(new StringReader(requestBody));
-        return HttpRequestUtils.parseQueryString(IOUtils.readData(br, contentLength).trim());
+        return new HashMap<>();
     }
 
-    public static Map<String, String> getRequestBody2(BufferedReader line) throws IOException {
+    /**
+     * HTTP POST 요청의 requestBody 데이터를 반환
+     * @param line: requestHeader의 모든 라인
+     * @return
+     * @throws IOException
+     */
+    public static Map<String, String> getRequestBody(BufferedReader line) throws IOException {
         String currentLine;
         int contentLength = 0;
         boolean isBody = false;

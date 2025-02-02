@@ -4,6 +4,8 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -108,21 +110,21 @@ public class HttpRequestUtilsTest {
 
     @Test
     public void requestQuestion2() throws Exception {
-        InputStream in = new FileInputStream(fileDir + "Http_Get_Join.txt");
+        InputStream in = Files.newInputStream(Paths.get(fileDir + "Http_Get_Join.txt"));
         BufferedReader line = new BufferedReader(new InputStreamReader(in));
 
         String firstLine = line.readLine();
         HttpRequestVo header = null;
-        Map<String, String> apiParams = new HashMap<>();;
-        if (!firstLine.isEmpty() && firstLine != null) {
+        if (!firstLine.isEmpty()) {
             header = HttpRequestHeaderUtils.getRequestUrl(firstLine);
         }
-
-        if (header != null && !header.getParams().isEmpty()) {
-            apiParams = new HashMap<>(HttpRequestUtils.parseQueryString(header.getParams()));
-            User user = new User(apiParams.get("userId"), apiParams.get("password"), apiParams.get("name"), apiParams.get("email"));
-            log.info("user : {}", user);
+        if (header == null) {
+            log.error("Invalid request");
+            return;
         }
+
+        String apiMethod = header.getMethod();
+        Map<String, String> apiParams = HttpRequestHeaderUtils.getParamsByMethod(apiMethod, header, line);
 
         assertThat(apiParams.getOrDefault("userId", ""), is("java"));
         assertThat(apiParams.getOrDefault("password", ""), is("test"));
@@ -136,36 +138,24 @@ public class HttpRequestUtilsTest {
         BufferedReader line = new BufferedReader(new InputStreamReader(in));
 
         String firstLine = line.readLine();
-        HttpRequestVo header;
+        HttpRequestVo header = null;
         if (!firstLine.isEmpty() && firstLine != null) {
             header = HttpRequestHeaderUtils.getRequestUrl(firstLine);
             log.info("header : {}", header);
         }
-
-        /*
-        String currentLine;
-        int contentLength = 0;
-        boolean isBody = false;
-        String requestBody = "";
-        while((currentLine = line.readLine()) != null) {
-            if (currentLine.isEmpty()){
-                isBody = true;
-                continue;
-            }
-            log.info("currentLine : {}", currentLine);
-
-            if (currentLine.startsWith("Content-Length:")) {
-                contentLength = Integer.parseInt((currentLine.split(": ")[1]));
-            }
-
-            if (isBody) {
-                requestBody = currentLine;
-            }
+        if (header == null) {
+            log.error("Invalid request");
+            return;
         }
-        BufferedReader br = new BufferedReader(new StringReader(requestBody));
-        log.info("readData : {}", HttpRequestUtils.parseQueryString(IOUtils.readData(br, contentLength).trim()));
-        */
-        log.debug("getRequestBody : {}", HttpRequestHeaderUtils.getRequestBody2(line));
+
+        String apiMethod = header.getMethod();
+        Map<String, String> apiParams = HttpRequestHeaderUtils.getParamsByMethod(apiMethod, header, line);
+        log.debug("getRequestBody : {}", apiParams);
+
+        assertThat(apiParams.getOrDefault("userId", ""), is("javajigi"));
+        assertThat(apiParams.getOrDefault("password", ""), is("password"));
+        assertThat(apiParams.getOrDefault("name", ""), is("JaeSung"));
+//        assertThat(apiParams.getOrDefault("email", ""), is("test%40naver.com"));
     }
 
     @Test

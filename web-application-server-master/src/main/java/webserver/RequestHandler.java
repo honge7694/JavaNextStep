@@ -31,33 +31,18 @@ public class RequestHandler extends Thread {
             BufferedReader line = new BufferedReader(new InputStreamReader(in));
             String firstLine = line.readLine();
             HttpRequestVo header = null;
-            String apiMethod = "";
-            String apiUrl = "";
-            Map<String, String> apiParams = new HashMap<>();
             if (firstLine != null && !firstLine.isEmpty()) {
                 header = HttpRequestHeaderUtils.getRequestUrl(firstLine);
-                apiMethod = header.getMethod();
-                apiUrl = header.getUrl();
+            }
+            if (header == null) {
+                log.error("Invalid request");
+                return;
             }
 
-            // GET 요청
-            if (apiMethod.equals("GET")) {
-                if (apiUrl.equals("/user/create") && !header.getParams().isEmpty()) {
-                    apiParams = new HashMap<>(HttpRequestUtils.parseQueryString(header.getParams()));
-                    User user = new User(apiParams.get("userId"), apiParams.get("password"), apiParams.get("name"), apiParams.get("email"));
-                    log.info("user : {}", user);
-                    apiUrl = "/index.html";
-                }
-            }
-
-            // POST 요청
-            log.debug("apiMethod : {}", apiMethod);
-            if (apiMethod.equals("POST")) {
-                apiParams = HttpRequestHeaderUtils.getRequestBody2(line);
-                User user = new User(apiParams.get("userId"), apiParams.get("password"), apiParams.get("name"), apiParams.get("email"));
-                log.debug("user : {}", user);
-                apiUrl = "/index.html";
-            }
+            String apiMethod = header.getMethod();
+            String apiUrl = header.getUrl();
+            Map<String, String> apiParams = HttpRequestHeaderUtils.getParamsByMethod(apiMethod, header, line);
+            apiUrl = processRequest(apiUrl, apiParams);
 
             byte[] body = Files.readAllBytes(new File("./webapp" + apiUrl).toPath());
             DataOutputStream dos = new DataOutputStream(out);
@@ -86,5 +71,14 @@ public class RequestHandler extends Thread {
         } catch (IOException e) {
             log.error(e.getMessage());
         }
+    }
+
+    private String processRequest(String apiUrl, Map<String, String> params) {
+        if (apiUrl.equals("/user/create")) {
+            User user = new User(params.get("userId"), params.get("password"), params.get("name"), params.get("email"));
+            log.debug("user : {}", user);
+            return "/index.html";
+        }
+        return apiUrl;
     }
 }
