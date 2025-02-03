@@ -4,13 +4,12 @@ import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.HttpRequestHeaderUtils;
-import util.HttpRequestUtils;
 import vo.HttpRequestVo;
+import vo.ResponseHeaderVo;
 
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
-import java.util.HashMap;
 import java.util.Map;
 
 public class RequestHandler extends Thread {
@@ -42,14 +41,20 @@ public class RequestHandler extends Thread {
             String apiMethod = header.getMethod();
             String apiUrl = header.getUrl();
             Map<String, String> apiParams = HttpRequestHeaderUtils.getParamsByMethod(apiMethod, header, line);
-            apiUrl = processRequest(apiUrl, apiParams);
+            ResponseHeaderVo responseHeader = processRequest(apiUrl, apiParams);
+            log.debug("responseHeader : {}", responseHeader.toString());
 
-            byte[] body = Files.readAllBytes(new File("./webapp" + apiUrl).toPath());
+            byte[] body = Files.readAllBytes(new File("./webapp" + responseHeader.getRedirectUrl()).toPath());
             DataOutputStream dos = new DataOutputStream(out);
-            response200Header(dos, body.length);
+
+            if (responseHeader.getRedirect()) {
+                response302Header(dos, responseHeader.getRedirectUrl());
+            } else {
+                response200Header(dos, body.length);
+            }
             responseBody(dos, body);
         } catch (IOException e) {
-            log.error(e.getMessage());
+            log.error("run: {}", e.getMessage());
         }
     }
 
@@ -64,6 +69,17 @@ public class RequestHandler extends Thread {
         }
     }
 
+    private void response302Header(DataOutputStream dos, String redirectUrl) {
+        try {
+            dos.writeBytes("HTTP/1.1 302 Found \r\n");
+            dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
+            dos.writeBytes("Location: " + redirectUrl);
+            dos.writeBytes("\r\n");
+        } catch (IOException e) {
+            log.error("response302Header: {}", e.getMessage());
+        }
+    }
+
     private void responseBody(DataOutputStream dos, byte[] body) {
         try {
             dos.write(body, 0, body.length);
@@ -73,12 +89,13 @@ public class RequestHandler extends Thread {
         }
     }
 
-    private String processRequest(String apiUrl, Map<String, String> params) {
+    private ResponseHeaderVo processRequest(String apiUrl, Map<String, String> params) {
+        log.debug("processRequest: {}", apiUrl);
         if (apiUrl.equals("/user/create")) {
             User user = new User(params.get("userId"), params.get("password"), params.get("name"), params.get("email"));
             log.debug("user : {}", user);
-            return "/index.html";
+            return new ResponseHeaderVo(true, apiUrl,"/index.html");
         }
-        return apiUrl;
+        return new ResponseHeaderVo(false, apiUrl, apiUrl);
     }
 }
