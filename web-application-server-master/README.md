@@ -24,6 +24,7 @@
 * assertEquals와 assertThat의 차이
   1. assertEquals는 두 값이 같으면 통과하지만, assertThat은 다양한 조건을 명확하게 표현할 수 있다.
   2. assertThat은 동등성 확인(is), null 확인(notNullValue()), 포함 여부(containsString()), 여러 조건 등 다양한 조건 검사가 가능하다.
+
 ### 요구사항 2 - get 방식으로 회원가입
 * ArrayList로 Header의 method, url, params, httpVersion을 다루는 중에 각 값이 몇번째에 있는지 헷갈리기 시작하여 VO 또는 DTO로 관리하기로 함.
 * DTO 
@@ -48,9 +49,13 @@
 ### 요구사항 4 - redirect 방식으로 이동
 * 지금까지 상태코드를 이용한 리다이렉트를 사용하지 않고, 직접 redirect를 했었는데 구현 후 상태코드를 더 알게됨
   * 302 Found : 요청된 리소스가 다른 URL로 임시 이동
-  * Location : 해당 URL로 이동 
+  * Location : 해당 URL로 이동
+
 ### 요구사항 5 - cookie
-* 
+* HTTP 302 상태코드로 Location 리다이렉트 시 쿠키가 사라지는 이슈
+  * login을 하여 쿠키가 생성되는 것 까지는 되지만, 리다이렉트시 쿠키가 사라졌다. 
+  * 이는 쿠키의 SameSite 속성이 None 또는 Strict로 설정되어 있으면 전송되지 않을 수 있다.
+  * SameSite 속성의 값을 Lax로 설정하여 해결
 
 ### 요구사항 6 - stylesheet 적용
 * 

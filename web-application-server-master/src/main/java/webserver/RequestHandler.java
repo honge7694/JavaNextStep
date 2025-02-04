@@ -50,7 +50,7 @@ public class RequestHandler extends Thread {
 
             if (responseHeader.getRedirect()) {
                 if (apiUrl.equals("/user/login")) {
-                    response200LoginHeader(dos, body.length, responseHeader.getLogin());
+                    response302LoginHeader(dos, responseHeader.getRedirectUrl(), responseHeader.getLogin());
                 } else {
                     response302Header(dos, responseHeader.getRedirectUrl());
                 }
@@ -85,15 +85,15 @@ public class RequestHandler extends Thread {
         }
     }
 
-    private void response200LoginHeader(DataOutputStream dos, int lengthOfBodyContent, boolean loginCookie) {
+    private void response302LoginHeader(DataOutputStream dos, String redirectUrl, boolean loginCookie) {
         try {
             dos.writeBytes("HTTP/1.1 302 Found \r\n");
             dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
-            dos.writeBytes("Set-Cookie: logined=" + loginCookie + "\r\n");
-            dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
+            dos.writeBytes("Set-Cookie: logined=" + loginCookie + "; Path=/; SameSite=Lax\r\n");
+            dos.writeBytes("Location: " + redirectUrl + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
-            log.error("response200LoginHeader: {}", e.getMessage());
+            log.error("response302LoginHeader: {}", e.getMessage());
         }
     }
 
@@ -116,6 +116,7 @@ public class RequestHandler extends Thread {
         } else if(apiUrl.equals("/user/login")) {
             User loginUser = DataBase.findUserById(params.get("userId"));
             log.debug("loginUser: {}", loginUser);
+
             if (loginUser != null && params.get("password").equals(loginUser.getPassword())) {
                 return new ResponseHeaderVo(true, apiUrl,"/index.html", true);
             } else {
