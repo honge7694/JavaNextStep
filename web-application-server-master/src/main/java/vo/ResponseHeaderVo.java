@@ -4,11 +4,17 @@ public class ResponseHeaderVo {
     private final boolean redirect;
     private final String apiUrl;
     private final String redirectUrl;
+    private final boolean login;
 
     public ResponseHeaderVo(boolean redirect, String apiUrl, String redirectUrl) {
+        this(redirect, apiUrl, redirectUrl, false);
+    }
+
+    public ResponseHeaderVo(boolean redirect, String apiUrl, String redirectUrl, boolean login) {
         this.redirect = redirect;
         this.apiUrl = apiUrl;
         this.redirectUrl = redirectUrl;
+        this.login = login;
     }
 
     public boolean isRedirect() {
@@ -34,5 +40,9 @@ public class ResponseHeaderVo {
 
     public String getRedirectUrl() {
         return redirectUrl;
+    }
+
+    public boolean getLogin() {
+        return login;
     }
 }

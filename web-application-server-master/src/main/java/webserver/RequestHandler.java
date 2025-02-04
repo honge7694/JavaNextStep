@@ -1,5 +1,6 @@
 package webserver;
 
+import db.DataBase;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +49,11 @@ public class RequestHandler extends Thread {
             DataOutputStream dos = new DataOutputStream(out);
 
             if (responseHeader.getRedirect()) {
-                response302Header(dos, responseHeader.getRedirectUrl());
+                if (apiUrl.equals("/user/login")) {
+                    response200LoginHeader(dos, body.length, responseHeader.getLogin());
+                } else {
+                    response302Header(dos, responseHeader.getRedirectUrl());
+                }
             } else {
                 response200Header(dos, body.length);
             }
@@ -73,10 +78,22 @@ public class RequestHandler extends Thread {
         try {
             dos.writeBytes("HTTP/1.1 302 Found \r\n");
             dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
-            dos.writeBytes("Location: " + redirectUrl);
+            dos.writeBytes("Location: " + redirectUrl + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error("response302Header: {}", e.getMessage());
+        }
+    }
+
+    private void response200LoginHeader(DataOutputStream dos, int lengthOfBodyContent, boolean loginCookie) {
+        try {
+            dos.writeBytes("HTTP/1.1 302 Found \r\n");
+            dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
+            dos.writeBytes("Set-Cookie: logined=" + loginCookie + "\r\n");
+            dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
+            dos.writeBytes("\r\n");
+        } catch (IOException e) {
+            log.error("response200LoginHeader: {}", e.getMessage());
         }
     }
 
@@ -93,8 +110,17 @@ public class RequestHandler extends Thread {
         log.debug("processRequest: {}", apiUrl);
         if (apiUrl.equals("/user/create")) {
             User user = new User(params.get("userId"), params.get("password"), params.get("name"), params.get("email"));
+            DataBase.addUser(user);
             log.debug("user : {}", user);
             return new ResponseHeaderVo(true, apiUrl,"/index.html");
+        } else if(apiUrl.equals("/user/login")) {
+            User loginUser = DataBase.findUserById(params.get("userId"));
+            log.debug("loginUser: {}", loginUser);
+            if (loginUser != null && params.get("password").equals(loginUser.getPassword())) {
+                return new ResponseHeaderVo(true, apiUrl,"/index.html", true);
+            } else {
+                return new ResponseHeaderVo(true, apiUrl, "/user/login_failed.html");
+            }
         }
         return new ResponseHeaderVo(false, apiUrl, apiUrl);
     }
